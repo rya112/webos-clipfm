@@ -1,67 +1,98 @@
 window.onload = () => {
   const container = document.querySelector(".container");
   const imgElement = document.querySelector(".cover-image");
-  const debug = document.getElementById("debug");
+  const audioElement = document.getElementById("audio");
+  const refreshButton = document.getElementById("refreshButton");
+  const debugElement = document.getElementById("debug");
 
   const defaultConfig = {
     image: "/logo.png",
     color: "#000000",
   };
 
-  const configUrl = window.env.CONFIG_URL;
+  if (refreshButton) {
+    refreshButton.onclick = function () {
+      initializeApp();
+    };
+  }
 
-  fetch(configUrl)
-    .then((response) => {
-      if (!response.ok)
-        throw new Error("Não foi possível carregar config remota.");
-      return response.text();
-    })
-    .then((configText) => {
-      const parsed = parseConfig(configText);
-      applyConfig(Object.assign({}, defaultConfig, parsed));
-    })
-    .catch((error) => {
-      debug(error.message);
-      applyConfig(defaultConfig);
-    });
+  initializeApp();
+
+  function initializeApp() {
+    const configUrl = window.env.CONFIG_URL;
+
+    fetchConfig(configUrl)
+      .then((config) => applyConfig(config))
+      .catch((error) => handleConfigError(error));
+  }
+
+  function fetchConfig(url) {
+    return fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to load remote config.");
+        return response.text();
+      })
+      .then((configText) => parseConfig(configText))
+      .then((parsedConfig) => Object.assign({}, defaultConfig, parsedConfig));
+  }
 
   function parseConfig(text) {
-    const lines = text.split("\n");
-    const config = {};
-    lines.forEach((line) => {
-      const [key, value] = line.split("=");
-      if (key.trim() && value.trim()) {
-        config[key.trim()] = value.trim();
+    var lines = text.split("\n");
+    var config = {};
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var parts = line.split("=");
+      if (parts.length === 2) {
+        var key = parts[0].trim();
+        var value = parts[1].trim();
+        if (key && value) {
+          config[key] = value;
+        }
       }
-    });
+    }
     return config;
   }
 
   function applyConfig(config) {
-    container.style.backgroundColor = config.color;
-
-    imgElement.crossOrigin = "anonymous";
-    imgElement.src = config.image;
-
-    const audio = new Audio(config.url);
-    audio.type = "audio/aacp";
-    audio.autoplay = true;
-    audio.loop = true;
-    audio.volume = 1.0;
-    audio.onerror = function () {
-      console.error("Error on load streaming audio");
-    };
-    audio
-      .play()
-      .then(() => {
-        console.log("Audio played.");
-      })
-      .catch((err) => {
-        console.error("Error on play", err);
-      });
+    setContainerStyle(config.color);
+    setImageSource(config.image);
+    initializeAudio(config.url);
   }
 
-  function logDebug(message) {
-    debug.innerText += "\n" + message;
+  function setContainerStyle(color) {
+    container.style.backgroundColor = color;
+  }
+
+  function setImageSource(imageUrl) {
+    imgElement.crossOrigin = "anonymous";
+    imgElement.src = imageUrl;
+  }
+
+  function initializeAudio(audioUrl) {
+    // const audio = new Audio(audioUrl);
+    // audio.type = "audio/aacp";
+    // audio.autoplay = true;
+    // audio.loop = true;
+    // audio.volume = 1.0;
+
+    // audio.onerror = () => console.error("Error loading streaming audio");
+    // audio
+    //   .play()
+    //   .then(() => console.log("Audio played."))
+    //   .catch((err) => console.error("Error playing audio", err));
+
+    audioElement.src = audioUrl;
+    audioElement.volume = 1.0;
+    audioElement.load();
+    audioElement.play();
+  }
+
+  function handleConfigError(error) {
+    logDebugMessage(error.message);
+    applyConfig(defaultConfig);
+  }
+
+  function logDebugMessage(message) {
+    debugElement.innerText += `\n${message}`;
   }
 };

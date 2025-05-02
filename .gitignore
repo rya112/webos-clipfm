@@ -28,3 +28,7 @@ Thumbs.db
 .env.local
 .vscode/
 .idea/
+
+# Samples
+.config
+config.js

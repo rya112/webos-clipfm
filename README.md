@@ -103,7 +103,7 @@ Aguardar reinicilização da tv
 Habilitar Key Server
 Executar
 ```sh
-ares-novacom --device tv --getkey
+ares-novacom --device {device-name} --getkey
 ```
 
 ---

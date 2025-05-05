@@ -2,19 +2,19 @@ window.onload = () => {
   const container = document.querySelector(".container");
   const imgElement = document.querySelector(".cover-image");
   const audioElement = document.getElementById("audio");
-  const refreshButton = document.getElementById("refreshButton");
   const debugElement = document.getElementById("debug");
+
+  // Control events
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      initializeApp();
+    }
+  });
 
   const defaultConfig = {
     image: "/logo.png",
     color: "#000000",
   };
-
-  if (refreshButton) {
-    refreshButton.onclick = function () {
-      initializeApp();
-    };
-  }
 
   initializeApp();
 
